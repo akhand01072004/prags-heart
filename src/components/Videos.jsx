@@ -10,8 +10,6 @@ import {
 
 const TOTAL_VIDEOS = 42;
 
-// A few special captions.
-// The rest automatically get a romantic caption.
 const specialCaptions = {
   1: "Some memories deserve to move, not just be remembered. ❤️",
   5: "I could watch this moment a hundred times.",
@@ -34,7 +32,6 @@ const defaultCaptions = [
   "This moment will always have a place in my heart.",
 ];
 
-// Generate all 42 videos
 const videos = Array.from(
   { length: TOTAL_VIDEOS },
   (_, index) => {
@@ -45,30 +42,47 @@ const videos = Array.from(
       src: `/videos/vid (${number}).mp4`,
       caption:
         specialCaptions[number] ||
-        defaultCaptions[index % defaultCaptions.length],
+        defaultCaptions[
+          index % defaultCaptions.length
+        ],
     };
   }
 );
 
-export default function Videos() {
-  const [selectedIndex, setSelectedIndex] = useState(null);
+export default function Videos({
+  setVideoPlaying,
+}) {
+  const [selectedIndex, setSelectedIndex] =
+    useState(null);
 
   const isOpen = selectedIndex !== null;
 
   const selectedVideo =
     isOpen ? videos[selectedIndex] : null;
 
-  // Open video
+  // ==========================================
+  // OPEN VIDEO
+  // ==========================================
+
   const openVideo = (index) => {
     setSelectedIndex(index);
   };
 
-  // Close video
+  // ==========================================
+  // CLOSE VIDEO
+  // ==========================================
+
   const closeVideo = () => {
     setSelectedIndex(null);
+
+    // Resume Alfaaz
+    setVideoPlaying(false);
   };
 
-  // Previous video
+  // ==========================================
+  // PREVIOUS
+  // ==========================================
+
   const showPrevious = () => {
     setSelectedIndex((current) => {
       if (current === null) return null;
@@ -78,9 +92,15 @@ export default function Videos() {
         videos.length
       );
     });
+
+    // Keep music paused while switching
+    setVideoPlaying(true);
   };
 
-  // Next video
+  // ==========================================
+  // NEXT
+  // ==========================================
+
   const showNext = () => {
     setSelectedIndex((current) => {
       if (current === null) return null;
@@ -90,9 +110,15 @@ export default function Videos() {
         videos.length
       );
     });
+
+    // Keep music paused while switching
+    setVideoPlaying(true);
   };
 
-  // Keyboard controls
+  // ==========================================
+  // KEYBOARD CONTROLS
+  // ==========================================
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -123,7 +149,10 @@ export default function Videos() {
     };
   }, [isOpen]);
 
-  // Prevent background scrolling
+  // ==========================================
+  // LOCK BACKGROUND SCROLL
+  // ==========================================
+
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -141,14 +170,17 @@ export default function Videos() {
       id="videos"
       className="relative overflow-hidden bg-[#050505] px-5 py-28 sm:px-8 lg:px-12"
     >
-      {/* Background glow */}
+      {/* ======================================
+          BACKGROUND GLOW
+      ======================================= */}
+
       <div className="pointer-events-none absolute left-1/2 top-1/3 h-[600px] w-[600px] -translate-x-1/2 rounded-full bg-red-600/10 blur-[160px]" />
 
       <div className="relative mx-auto max-w-7xl">
 
-        {/* =====================================
-            SECTION HEADING
-        ====================================== */}
+        {/* ======================================
+            HEADING
+        ======================================= */}
 
         <motion.div
           className="mb-20 text-center"
@@ -168,7 +200,6 @@ export default function Videos() {
             duration: 0.8,
           }}
         >
-          {/* Heart divider */}
           <div className="mb-6 flex items-center justify-center gap-3">
             <div className="h-px w-12 bg-red-500/40" />
 
@@ -202,12 +233,14 @@ export default function Videos() {
           </p>
         </motion.div>
 
-        {/* =====================================
-            FEATURED VIDEO
-        ====================================== */}
+        {/* ======================================
+            FEATURED VIDEO CARD
+        ======================================= */}
 
-        <motion.div
-          className="group relative mb-8 cursor-pointer overflow-hidden rounded-[2rem] border border-white/5 bg-zinc-900"
+        <motion.button
+          type="button"
+          onClick={() => openVideo(0)}
+          className="group relative mb-8 block w-full overflow-hidden rounded-[2rem] border border-white/5 bg-zinc-900 text-left"
           initial={{
             opacity: 0,
             y: 40,
@@ -223,13 +256,11 @@ export default function Videos() {
           transition={{
             duration: 0.8,
           }}
-          onClick={() => openVideo(0)}
         >
+          {/* Lightweight preview */}
           <video
             src={videos[0].src}
             muted
-            loop
-            autoPlay
             playsInline
             preload="metadata"
             className="h-[55vh] min-h-[400px] w-full object-cover transition duration-1000 group-hover:scale-105"
@@ -238,7 +269,7 @@ export default function Videos() {
           {/* Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/10 to-transparent" />
 
-          {/* Play button */}
+          {/* Play */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/20 bg-black/30 backdrop-blur-xl transition duration-500 group-hover:scale-110 group-hover:border-red-400/50 group-hover:bg-red-500/20">
               <Play
@@ -248,7 +279,7 @@ export default function Videos() {
             </div>
           </div>
 
-          {/* Featured text */}
+          {/* Text */}
           <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-10">
             <div className="mb-3 flex items-center gap-3">
               <span className="text-xs uppercase tracking-[0.3em] text-red-400">
@@ -262,11 +293,11 @@ export default function Videos() {
               {videos[0].caption}
             </p>
           </div>
-        </motion.div>
+        </motion.button>
 
-        {/* =====================================
+        {/* ======================================
             VIDEO GRID
-        ====================================== */}
+        ======================================= */}
 
         <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3 xl:grid-cols-4">
           {videos.slice(1).map((video, index) => {
@@ -298,21 +329,25 @@ export default function Videos() {
                     (index % 4) * 0.05,
                 }}
               >
-                {/* Video preview */}
+                {/* =================================
+                    VIDEO PREVIEW
+
+                    IMPORTANT:
+                    NO autoplay
+                ================================== */}
+
                 <video
                   src={video.src}
                   muted
-                  loop
-                  autoPlay
                   playsInline
                   preload="metadata"
                   className="aspect-[3/4] w-full object-cover transition duration-700 group-hover:scale-105"
                 />
 
-                {/* Dark overlay */}
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-                {/* Play icon */}
+                {/* Play */}
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-black/30 backdrop-blur-md transition duration-300 group-hover:scale-110 group-hover:bg-red-500/20">
                     <Play
@@ -343,9 +378,9 @@ export default function Videos() {
           })}
         </div>
 
-        {/* =====================================
+        {/* ======================================
             END MESSAGE
-        ====================================== */}
+        ======================================= */}
 
         <motion.div
           className="mt-28 text-center"
@@ -382,9 +417,9 @@ export default function Videos() {
         </motion.div>
       </div>
 
-      {/* =====================================
-          FULLSCREEN VIDEO LIGHTBOX
-      ====================================== */}
+      {/* ======================================
+          FULLSCREEN VIDEO PLAYER
+      ======================================= */}
 
       <AnimatePresence>
         {isOpen && selectedVideo && (
@@ -401,7 +436,10 @@ export default function Videos() {
             }}
             onClick={closeVideo}
           >
-            {/* Close */}
+            {/* =================================
+                CLOSE
+            ================================== */}
+
             <button
               type="button"
               onClick={closeVideo}
@@ -411,7 +449,10 @@ export default function Videos() {
               <X size={22} />
             </button>
 
-            {/* Previous */}
+            {/* =================================
+                PREVIOUS
+            ================================== */}
+
             <button
               type="button"
               onClick={(event) => {
@@ -424,7 +465,10 @@ export default function Videos() {
               <ChevronLeft size={24} />
             </button>
 
-            {/* Next */}
+            {/* =================================
+                NEXT
+            ================================== */}
+
             <button
               type="button"
               onClick={(event) => {
@@ -437,13 +481,16 @@ export default function Videos() {
               <ChevronRight size={24} />
             </button>
 
-            {/* Video */}
+            {/* =================================
+                PLAYER
+            ================================== */}
+
             <motion.div
               key={selectedVideo.id}
               className="relative flex w-full max-w-5xl flex-col items-center"
               initial={{
                 opacity: 0,
-                scale: 0.95,
+                scale: 0.96,
               }}
               animate={{
                 opacity: 1,
@@ -451,7 +498,7 @@ export default function Videos() {
               }}
               exit={{
                 opacity: 0,
-                scale: 0.95,
+                scale: 0.96,
               }}
               transition={{
                 duration: 0.3,
@@ -460,16 +507,29 @@ export default function Videos() {
                 event.stopPropagation()
               }
             >
+              {/* Actual video */}
+
               <video
                 key={selectedVideo.src}
                 src={selectedVideo.src}
                 controls
                 autoPlay
                 playsInline
+                preload="auto"
+                onPlay={() => {
+                  setVideoPlaying(true);
+                }}
+                onPause={() => {
+                  setVideoPlaying(false);
+                }}
+                onEnded={() => {
+                  setVideoPlaying(false);
+                }}
                 className="max-h-[78vh] w-full rounded-2xl object-contain shadow-2xl"
               />
 
               {/* Caption */}
+
               <div className="mt-5 text-center">
                 <p className="text-sm text-white/70">
                   {selectedVideo.caption}
